@@ -1,48 +1,64 @@
 import streamlit as st
 
-# Създаваме масив (списък), ако още не съществува
+# 1. Инициализиране на базата данни (session_state)
+# Използваме session_state, за да не се изтриват данните при всяко презареждане
 if "books" not in st.session_state:
     st.session_state.books = []
 
-# Добавяне на книга
-st.header("+ Добави книга")
+st.title("📚 Приложение за управление на библиотека")
+
+# --- СЕКЦИЯ: ДОБАВЯНЕ НА КНИГА ---
+st.header("➕ Добави книга")
 
 title = st.text_input("Заглавие")
 author = st.text_input("Автор")
-price = st.number_input("Цена", min_value=0.0)
+price = st.number_input("Цена", min_value=0.0, step=0.1)
 
 if st.button("Добави книгата"):
-    book = {
-        "title": title,
-        "author": author,
-        "price": price
-    }
-    st.session_state.books.append(book)
-    st.success("Книгата е добавена!")
+    if title.strip() == "" or author.strip() == "":
+        st.warning("Моля, попълнете заглавие и автор!")
+    else:
+        book = {
+            "title": title,
+            "author": author,
+            "price": price
+        }
+        st.session_state.books.append(book)
+        st.success(f"Книгата '{title}' е добавена успешно!")
 
-# Покажи всички книги
+st.divider()
+
+# --- СЕКЦИЯ: ПОКАЗВАНЕ НА ВСИЧКИ КНИГИ ---
+st.header("📋 Списък с книги")
+
 if st.button("Покажи всички книги"):
     if len(st.session_state.books) == 0:
         st.write("Няма добавени книги.")
     else:
         for book in st.session_state.books:
-            st.write("Заглавие:", book["title"])
-            st.write("Автор:", book["author"])
-            st.write("Цена:", book["price"])
-            st.write("-------------")
+            st.write(f"**Заглавие:** {book['title']}")
+            st.write(f"**Автор:** {book['author']}")
+            st.write(f"**Цена:** {book['price']:.2f} лв.")
+            st.write("--------------------")
 
-# Търсене по автор
-st.header("Търсене по автор")
+st.divider()
 
-search_author = st.text_input("Въведи име на автор")
+# --- СЕКЦИЯ: ТЪРСЕНЕ ПО АВТОР ---
+st.header("🔍 Търсене по автор")
+
+search_author = st.text_input("Въведи име на автор за търсене")
 
 if st.button("Търси по автор"):
     found = False
-
-    for book in st.session_state.books:
-        if book["author"] == search_author:
-            st.write(book)
-            found = True
-
-    if found == False:
-        st.write("Няма намерени книги от този автор.")
+    
+    if search_author.strip() == "":
+        st.warning("Моля, въведете име на автор.")
+    else:
+        for book in st.session_state.books:
+            # Търсим съвпадение (може да добавиш .lower(), за да не е чувствително към главни букви)
+            if book["author"].lower() == search_author.lower():
+                st.write(book)
+                found = True
+        
+        if not found:
+            st.error("Няма намерени книги от този автор.")
